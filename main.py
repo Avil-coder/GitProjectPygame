@@ -20,6 +20,7 @@ pygame.display.set_caption("Тест")
 all_sprites = pygame.sprite.Group()
 dot_sprites = pygame.sprite.Group()
 block_sprites = pygame.sprite.Group()
+heart_sprites = pygame.sprite.Group()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen.fill((R, G, B))
 font = pygame.font.Font(None, 25)
@@ -30,6 +31,7 @@ image_down = load_image("data/pacman_down3.png")
 image_stop = load_image("data/pacman_stop.png")
 dot_image = load_image('data/Dot2.png')
 blk_image = load_image('data/block.png')
+heart_image = load_image('data/heart.png')
 clock = pygame.time.Clock()
 horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
@@ -44,6 +46,11 @@ screen.blit(text, [300, 300])
 pygame.mixer.music.load('data/Sound_06985.mp3')
 pygame.mixer.music.set_volume(0.05)
 pygame.mixer.music.play(-1, 0.0)
+
+
+class Restart():
+    AnimatedSprite(image_stop, 1, 1, 80, 80)
+    Dot(dot_image)
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -70,6 +77,14 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.image = self.frames[self.cur_frame]
         self.rect.x += sp_x
         self.rect.y += sp_y
+
+
+class Live(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(heart_sprites)
+        self.image = heart_image
+        self.rect = self.rect.move(x, y)
+
 
 
 class Fall_blocks(pygame.sprite.Sprite):
@@ -109,14 +124,14 @@ class Dot(pygame.sprite.Sprite):
         textRectObj.center = (750, 30)
         screen.blit(textSurfaceObj, textRectObj)
         if self.score != 0 and self.score == 10:
-            for i in range(3):
-                Fall_blocks(blk_image)
             block_sprites.update()
             block_sprites.draw(screen)
 
 
 AnimatedSprite(image_stop, 1, 1, 80, 80)
 Dot(dot_image)
+for i in range(3):
+    Fall_blocks(blk_image)
 while running:
     clock.tick(FPS)
     for event in pygame.event.get():
