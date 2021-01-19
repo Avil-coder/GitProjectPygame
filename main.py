@@ -1,0 +1,162 @@
+import pygame
+from random import randint
+
+WIDTH, HEIGHT = 800, 600
+R, G, B = 0, 0, 0
+SPEED = 13
+FPS = 13
+
+
+def load_image(name):
+    if name[-2:] == 'jpg':
+        image = pygame.image.load(name).convert()
+    else:
+        image = pygame.image.load(name).convert_alpha()
+    return image
+
+
+pygame.init()
+pygame.display.set_caption("Тест")
+all_sprites = pygame.sprite.Group()
+dot_sprites = pygame.sprite.Group()
+block_sprites = pygame.sprite.Group()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen.fill((R, G, B))
+font = pygame.font.Font(None, 25)
+image_up = load_image("data/pacman_up3.png")
+image_left = load_image("data/pacman_left3.png")
+image_right = load_image("data/pacman_right3.png")
+image_down = load_image("data/pacman_down3.png")
+image_stop = load_image("data/pacman_stop.png")
+dot_image = load_image('data/Dot2.png')
+blk_image = load_image('data/block.png')
+clock = pygame.time.Clock()
+horizontal_borders = pygame.sprite.Group()
+vertical_borders = pygame.sprite.Group()
+running = True
+all_sprites.draw(screen)
+x, y = 0, 0
+score = 0
+speedx = 0
+speedy = 0
+text = font.render("Score: "+str(score), True, (255, 255, 255))
+screen.blit(text, [300, 300])
+pygame.mixer.music.load('data/Sound_06985.mp3')
+pygame.mixer.music.set_volume(0.05)
+pygame.mixer.music.play(-1, 0.0)
+
+
+class AnimatedSprite(pygame.sprite.Sprite):
+    def __init__(self, sheet, columns, rows, x, y):
+        super().__init__(all_sprites)
+        self.frames = []
+        self.cut_sheet(sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(x, y)
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self, sp_x, sp_y, x, y):
+        self.rect.x, self.rect.y = x, y
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+        self.rect.x += sp_x
+        self.rect.y += sp_y
+
+
+class Fall_blocks(pygame.sprite.Sprite):
+    def __init__(self, blk):
+        super().__init__(block_sprites)
+        self.image = blk
+        self.rect = self.image.get_rect()
+        self.rect = self.rect.move(randint(10, WIDTH - 10), -10)
+
+    def update(self):
+        if self.rect.y >= -20:
+            self.rect.y += 8
+        else:
+            self.kill()
+        if pygame.sprite.spritecollideany(self, all_sprites):
+            print(-1)
+
+
+class Dot(pygame.sprite.Sprite):
+    def __init__(self, dot):
+        super().__init__(dot_sprites)
+        self.add()
+        self.image = dot
+        self.rect = self.image.get_rect()
+        self.rect = self.rect.move(randint(30, WIDTH - 30), randint(30, HEIGHT - 30))
+        self.score = 0
+        self.st = 0
+
+    def update(self):
+        if pygame.sprite.spritecollideany(self, all_sprites):
+            self.rect.x = randint(0, WIDTH - 10)
+            self.rect.y = randint(0, HEIGHT - 10)
+            self.score += 10
+        font = pygame.font.Font(None, 15)
+        textSurfaceObj = font.render('Score: ' + str(self.score), True, (255, 255, 255))
+        textRectObj = textSurfaceObj.get_rect()
+        textRectObj.center = (750, 30)
+        screen.blit(textSurfaceObj, textRectObj)
+        if self.score != 0 and randint(0, 50) == 6:
+            Fall_blocks(blk_image)
+            block_sprites.update()
+            block_sprites.draw(screen)
+
+
+AnimatedSprite(image_stop, 1, 1, 80, 80)
+Dot(dot_image)
+while running:
+    clock.tick(FPS)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    keystate = pygame.key.get_pressed()
+    if keystate[pygame.K_LEFT]:
+        speedy, speedx = 0, -SPEED
+        for item in all_sprites:
+            item.kill()
+        pacman_ani = AnimatedSprite(image_left, 4, 1, 8, 8)
+    elif keystate[pygame.K_RIGHT]:
+        speedy, speedx = 0, SPEED
+        for item in all_sprites:
+            item.kill()
+        pacman_ani = AnimatedSprite(image_right, 4, 1, 8, 8)
+    elif keystate[pygame.K_UP]:
+        speedx, speedy = 0, -SPEED
+        for item in all_sprites:
+            item.kill()
+        pacman_ani = AnimatedSprite(image_up, 4, 1, 8, 8)
+    elif keystate[pygame.K_DOWN]:
+        speedx, speedy = 0, SPEED
+        for item in all_sprites:
+            item.kill()
+        pacman_ani = AnimatedSprite(image_down, 4, 1, 8, 8)
+    x += speedx
+    y += speedy
+    if x < -30:
+        x += WIDTH + 30
+    if x > WIDTH + 30:
+        x = -30
+    if y < -30:
+        y += HEIGHT + 30
+    if y > HEIGHT + 30:
+        y = -30
+    screen.fill((R, G, B))
+    dot_sprites.update()
+    dot_sprites.draw(screen)
+    all_sprites.update(speedx, speedy, x, y)
+    all_sprites.draw(screen)
+    pygame.display.flip()
+
+pygame.quit()
