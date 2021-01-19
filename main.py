@@ -109,13 +109,14 @@ class Dot(pygame.sprite.Sprite):
         textRectObj.center = (750, 30)
         screen.blit(textSurfaceObj, textRectObj)
         if self.score != 0 and randint(0, 50) == 6:
-            Fall_blocks(blk_image)
             block_sprites.update()
             block_sprites.draw(screen)
 
 
 AnimatedSprite(image_stop, 1, 1, 80, 80)
 Dot(dot_image)
+for i in range(3):
+    Fall_blocks(blk_image)
 while running:
     clock.tick(FPS)
     for event in pygame.event.get():
