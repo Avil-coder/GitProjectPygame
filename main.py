@@ -31,13 +31,13 @@ image_down = load_image("data/pacman_down3.png")
 image_stop = load_image("data/pacman_stop.png")
 dot_image = load_image('data/Dot2.png')
 blk_image = load_image('data/block.png')
-heart_image = load_image('data/heart.png')
+heart_image = load_image('data/heart3.png')
 clock = pygame.time.Clock()
 horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
 running = True
 all_sprites.draw(screen)
-x, y = 0, 0
+x, y = WIDTH // 2, HEIGHT // 2
 score = 0
 speedx = 0
 speedy = 0
@@ -47,10 +47,6 @@ pygame.mixer.music.load('data/Sound_06985.mp3')
 pygame.mixer.music.set_volume(0.05)
 pygame.mixer.music.play(-1, 0.0)
 
-
-class Restart():
-    AnimatedSprite(image_stop, 1, 1, 80, 80)
-    Dot(dot_image)
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -79,13 +75,16 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.rect.y += sp_y
 
 
+
 class Live(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, heart):
         super().__init__(heart_sprites)
-        self.image = heart_image
-        self.rect = self.rect.move(x, y)
+        self.image = heart
+        self.rect = self.image.get_rect()
+        self.rect = self.rect.move(0, 0)
 
-
+    def update(self):
+        self.rect.x = 0
 
 class Fall_blocks(pygame.sprite.Sprite):
     def __init__(self, blk):
@@ -101,6 +100,9 @@ class Fall_blocks(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollideany(self, all_sprites):
             print(-1)
+            heart_image = load_image('data/heart3_2.png')
+            Live(heart_image)
+
 
 
 class Dot(pygame.sprite.Sprite):
@@ -128,51 +130,57 @@ class Dot(pygame.sprite.Sprite):
             block_sprites.draw(screen)
 
 
-AnimatedSprite(image_stop, 1, 1, 80, 80)
-Dot(dot_image)
-for i in range(3):
-    Fall_blocks(blk_image)
-while running:
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    keystate = pygame.key.get_pressed()
-    if keystate[pygame.K_LEFT]:
-        speedy, speedx = 0, -SPEED
-        for item in all_sprites:
-            item.kill()
-        pacman_ani = AnimatedSprite(image_left, 4, 1, 8, 8)
-    elif keystate[pygame.K_RIGHT]:
-        speedy, speedx = 0, SPEED
-        for item in all_sprites:
-            item.kill()
-        pacman_ani = AnimatedSprite(image_right, 4, 1, 8, 8)
-    elif keystate[pygame.K_UP]:
-        speedx, speedy = 0, -SPEED
-        for item in all_sprites:
-            item.kill()
-        pacman_ani = AnimatedSprite(image_up, 4, 1, 8, 8)
-    elif keystate[pygame.K_DOWN]:
-        speedx, speedy = 0, SPEED
-        for item in all_sprites:
-            item.kill()
-        pacman_ani = AnimatedSprite(image_down, 4, 1, 8, 8)
-    x += speedx
-    y += speedy
-    if x < -30:
-        x += WIDTH + 30
-    if x > WIDTH + 30:
-        x = -30
-    if y < -30:
-        y += HEIGHT + 30
-    if y > HEIGHT + 30:
-        y = -30
-    screen.fill((R, G, B))
-    dot_sprites.update()
-    dot_sprites.draw(screen)
-    all_sprites.update(speedx, speedy, x, y)
-    all_sprites.draw(screen)
-    pygame.display.flip()
+def game_loop():
+    global x, y, running, speedy, speedx
+    AnimatedSprite(image_stop, 1, 1, 8, 8)
+    Dot(dot_image)
+    Live(heart_image)
+    for i in range(3):
+        Fall_blocks(blk_image)
+    while running:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        keystate = pygame.key.get_pressed()
+        if keystate[pygame.K_LEFT]:
+            speedy, speedx = 0, -SPEED
+            for item in all_sprites:
+                item.kill()
+            AnimatedSprite(image_left, 4, 1, 8, 8)
+        elif keystate[pygame.K_RIGHT]:
+            speedy, speedx = 0, SPEED
+            for item in all_sprites:
+                item.kill()
+            AnimatedSprite(image_right, 4, 1, 8, 8)
+        elif keystate[pygame.K_UP]:
+            speedx, speedy = 0, -SPEED
+            for item in all_sprites:
+                item.kill()
+            AnimatedSprite(image_up, 4, 1, 8, 8)
+        elif keystate[pygame.K_DOWN]:
+            speedx, speedy = 0, SPEED
+            for item in all_sprites:
+                item.kill()
+            AnimatedSprite(image_down, 4, 1, 8, 8)
+        x += speedx
+        y += speedy
+        if x < -30:
+            x += WIDTH + 30
+        if x > WIDTH + 30:
+            x = -30
+        if y < -30:
+            y += HEIGHT + 30
+        if y > HEIGHT + 30:
+            y = -30
+        screen.fill((R, G, B))
+        heart_sprites.update()
+        heart_sprites.draw(screen)
+        dot_sprites.update()
+        dot_sprites.draw(screen)
+        all_sprites.update(speedx, speedy, x, y)
+        all_sprites.draw(screen)
+        pygame.display.flip()
 
+game_loop()
 pygame.quit()
