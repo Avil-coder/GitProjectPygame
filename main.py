@@ -36,30 +36,33 @@ heart_image = load_image('data/heart3.png')
 heart_image1 = load_image('data/heart3_1.png')
 heart_image2 = load_image('data/heart3_2.png')
 clock = pygame.time.Clock()
-horizontal_borders = pygame.sprite.Group()
-vertical_borders = pygame.sprite.Group()
 running = True
 all_sprites.draw(screen)
 x, y = WIDTH // 2, HEIGHT // 2
 score = 0
-speedx = 0
-speedy = 0
+speedx, speedy = 0, 0
 text = font.render("Score: "+str(score), True, (255, 255, 255))
 screen.blit(text, [300, 300])
 pygame.mixer.music.load('data/Sound_06985.mp3')
 pygame.mixer.music.set_volume(0.05)
 pygame.mixer.music.play(-1, 0.0)
+live_score = 0
 
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x, y):
+    def __init__(self, sheet, columns, rows, x, y, kill=False):
         super().__init__(all_sprites)
-        self.frames = []
-        self.cut_sheet(sheet, columns, rows)
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        self.rect = self.rect.move(x, y)
+        self.kill_ = kill
+        if self.kill_:
+            for item in all_sprites:
+                item.kill()
+        else:
+            self.frames = []
+            self.cut_sheet(sheet, columns, rows)
+            self.cur_frame = 0
+            self.image = self.frames[self.cur_frame]
+            self.rect = self.rect.move(x, y)
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
@@ -85,7 +88,7 @@ class Live(pygame.sprite.Sprite):
         self.kill_ = kill
         if self.kill_:
             for item in heart_sprites:
-                print("Collision detected")
+                print('live')
                 item.kill()
         else:
             self.add(heart_sprites)
@@ -102,28 +105,41 @@ class Fall_blocks(pygame.sprite.Sprite):
         self.image = blk
         self.rect = self.image.get_rect()
         self.rect = self.rect.move(randint(10, WIDTH - 10), -10)
-        self.live_score = 0
 
     def update(self):
-        global heart_image1, heart_image2
+        global heart_image1, heart_image2, live_score
         if self.rect.y >= -20:
             self.rect.y += 8
         else:
             self.kill()
         if pygame.sprite.spritecollideany(self, all_sprites):
-            self.live_score += 1
-            if self.live_score == 1:
+            print(live_score)
+            live_score += 1
+            if live_score == 1:
                 screen.fill((R, G, B))
                 Live(True)
                 Live(False, heart_image2)
                 heart_sprites.draw(screen)
-            elif self.live_score == 2:
+                self.restart()
+            elif live_score == 2:
                 screen.fill((R, G, B))
                 Live(True)
                 Live(False, heart_image1)
                 heart_sprites.draw(screen)
-            elif self.live_score == 3:
+                self.restart()
+            elif live_score == 3:
                 draw_game_over()
+
+    def restart(self):
+        global x, y, speedy, speedx
+        pygame.mixer.music.rewind()
+        screen.fill((R, G ,B))
+        x, y = WIDTH // 2, HEIGHT // 2
+        speedx, speedy = 0, 0
+        AnimatedSprite(image_stop, 1, 1, 8, 8, True)
+        AnimatedSprite(image_stop, 1, 1, 8, 8)
+        for item in block_sprites:
+            item.kill()
 
 
 
@@ -142,12 +158,14 @@ class Dot(pygame.sprite.Sprite):
             self.rect.x = randint(0, WIDTH - 10)
             self.rect.y = randint(0, HEIGHT - 10)
             self.score += 10
+            for i in range(4):
+                Fall_blocks(blk_image)
         font = pygame.font.Font(None, 15)
         textSurfaceObj = font.render('Score: ' + str(self.score), True, (255, 255, 255))
         textRectObj = textSurfaceObj.get_rect()
         textRectObj.center = (750, 30)
         screen.blit(textSurfaceObj, textRectObj)
-        if self.score != 0 and self.score == 10:
+        if self.score != 0 and self.score % 10 == 0:
             block_sprites.update()
             block_sprites.draw(screen)
 
@@ -168,8 +186,6 @@ def game_loop():
     AnimatedSprite(image_stop, 1, 1, 8, 8)
     Dot(dot_image)
     Live(False, heart_image)
-    for i in range(3):
-        Fall_blocks(blk_image)
     while running:
         clock.tick(FPS)
         for event in pygame.event.get():
