@@ -74,45 +74,14 @@ class AnimatedSprite(pygame.sprite.Sprite):
                     frame_location, self.rect.size)))
 
     def update(self, sp_x, sp_y, x, y):
+        global heart_image1, heart_image2, live_score
         self.rect.x, self.rect.y = x, y
+        self.rect.topleft = self.rect.x, self.rect.y
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.rect.x += sp_x
         self.rect.y += sp_y
-
-
-
-class Live(pygame.sprite.Sprite):
-    def __init__(self, kill=False, heart=heart_image):
-        super().__init__(heart_sprites)
-        self.kill_ = kill
-        if self.kill_:
-            for item in heart_sprites:
-                print('live')
-                item.kill()
-        else:
-            self.add(heart_sprites)
-            self.image = heart
-            self.rect = self.image.get_rect()
-            self.rect = self.rect.move(0, 0)
-
-    def update(self):
-        self.rect.x = 0
-
-class Fall_blocks(pygame.sprite.Sprite):
-    def __init__(self, blk):
-        super().__init__(block_sprites)
-        self.image = blk
-        self.rect = self.image.get_rect()
-        self.rect = self.rect.move(randint(10, WIDTH - 10), -10)
-
-    def update(self):
-        global heart_image1, heart_image2, live_score
-        if self.rect.y >= -20:
-            self.rect.y += 8
-        else:
-            self.kill()
-        if pygame.sprite.spritecollideany(self, all_sprites):
+        if pygame.sprite.spritecollideany(self, block_sprites):
             print(live_score)
             live_score += 1
             if live_score == 1:
@@ -143,13 +112,42 @@ class Fall_blocks(pygame.sprite.Sprite):
 
 
 
+class Live(pygame.sprite.Sprite):
+    def __init__(self, kill=False, heart=heart_image):
+        super().__init__(heart_sprites)
+        self.kill_ = kill
+        if self.kill_:
+            for item in heart_sprites:
+                item.kill()
+        else:
+            self.add(heart_sprites)
+            self.image = heart
+            self.rect = self.image.get_rect()
+            self.rect = self.rect.move(0, 0)
+
+class Fall_blocks(pygame.sprite.Sprite):
+    def __init__(self, blk):
+        super().__init__(block_sprites)
+        self.image = blk
+        self.rect = self.image.get_rect()
+        self.rect = self.rect.move(randint(10, WIDTH - 10), -20)
+
+    def update(self):
+        self.rect.topleft = self.rect.x, self.rect.y
+        if self.rect.y >= -20:
+            self.rect.y += 9
+        else:
+            self.kill()
+
+
+
 class Dot(pygame.sprite.Sprite):
     def __init__(self, dot):
         super().__init__(dot_sprites)
         self.add()
         self.image = dot
         self.rect = self.image.get_rect()
-        self.rect = self.rect.move(randint(30, WIDTH - 30), randint(30, HEIGHT - 30))
+        self.rect = self.rect.move(randint(30, WIDTH - 30), randint(30, HEIGHT -150))
         self.score = 0
         self.st = 0
 
