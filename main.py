@@ -1,5 +1,6 @@
 import pygame
 from random import randint
+import sys
 
 WIDTH, HEIGHT = 800, 600
 R, G, B = 0, 0, 0
@@ -16,7 +17,7 @@ def load_image(name):
 
 
 pygame.init()
-pygame.display.set_caption("Тест")
+pygame.display.set_caption("PacSnake")
 all_sprites = pygame.sprite.Group()
 dot_sprites = pygame.sprite.Group()
 block_sprites = pygame.sprite.Group()
@@ -32,6 +33,8 @@ image_stop = load_image("data/pacman_stop.png")
 dot_image = load_image('data/Dot2.png')
 blk_image = load_image('data/block.png')
 heart_image = load_image('data/heart3.png')
+heart_image1 = load_image('data/heart3_1.png')
+heart_image2 = load_image('data/heart3_2.png')
 clock = pygame.time.Clock()
 horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
@@ -77,11 +80,18 @@ class AnimatedSprite(pygame.sprite.Sprite):
 
 
 class Live(pygame.sprite.Sprite):
-    def __init__(self, heart):
+    def __init__(self, kill=False, heart=heart_image):
         super().__init__(heart_sprites)
-        self.image = heart
-        self.rect = self.image.get_rect()
-        self.rect = self.rect.move(0, 0)
+        self.kill_ = kill
+        if self.kill_:
+            for item in heart_sprites:
+                print("Collision detected")
+                item.kill()
+        else:
+            self.add(heart_sprites)
+            self.image = heart
+            self.rect = self.image.get_rect()
+            self.rect = self.rect.move(0, 0)
 
     def update(self):
         self.rect.x = 0
@@ -92,16 +102,28 @@ class Fall_blocks(pygame.sprite.Sprite):
         self.image = blk
         self.rect = self.image.get_rect()
         self.rect = self.rect.move(randint(10, WIDTH - 10), -10)
+        self.live_score = 0
 
     def update(self):
+        global heart_image1, heart_image2
         if self.rect.y >= -20:
             self.rect.y += 8
         else:
             self.kill()
         if pygame.sprite.spritecollideany(self, all_sprites):
-            print(-1)
-            heart_image = load_image('data/heart3_2.png')
-            Live(heart_image)
+            self.live_score += 1
+            if self.live_score == 1:
+                screen.fill((R, G, B))
+                Live(True)
+                Live(False, heart_image2)
+                heart_sprites.draw(screen)
+            elif self.live_score == 2:
+                screen.fill((R, G, B))
+                Live(True)
+                Live(False, heart_image1)
+                heart_sprites.draw(screen)
+            elif self.live_score == 3:
+                draw_game_over()
 
 
 
@@ -129,12 +151,23 @@ class Dot(pygame.sprite.Sprite):
             block_sprites.update()
             block_sprites.draw(screen)
 
+def draw_game_over():
+    img_end = pygame.image.load('data/game_over.png')
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit(0)
+        screen.fill((R, G, B))
+        screen.blit(img_end, [WIDTH // 2 - 50, HEIGHT // 2 - 50])
+        pygame.mixer.music.stop()
+        pygame.display.update()
 
 def game_loop():
     global x, y, running, speedy, speedx
     AnimatedSprite(image_stop, 1, 1, 8, 8)
     Dot(dot_image)
-    Live(heart_image)
+    Live(False, heart_image)
     for i in range(3):
         Fall_blocks(blk_image)
     while running:
@@ -174,7 +207,6 @@ def game_loop():
         if y > HEIGHT + 30:
             y = -30
         screen.fill((R, G, B))
-        heart_sprites.update()
         heart_sprites.draw(screen)
         dot_sprites.update()
         dot_sprites.draw(screen)
