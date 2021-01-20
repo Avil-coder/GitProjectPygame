@@ -130,11 +130,11 @@ class Fall_blocks(pygame.sprite.Sprite):
         super().__init__(block_sprites)
         self.image = blk
         self.rect = self.image.get_rect()
-        self.rect = self.rect.move(randint(10, WIDTH - 10), -20)
+        self.rect = self.rect.move(randint(10, WIDTH - 10), -60)
 
     def update(self):
         self.rect.topleft = self.rect.x, self.rect.y
-        if self.rect.y >= -20:
+        if self.rect.y >= -60:
             self.rect.y += 9
         else:
             self.kill()
@@ -147,7 +147,7 @@ class Dot(pygame.sprite.Sprite):
         self.add()
         self.image = dot
         self.rect = self.image.get_rect()
-        self.rect = self.rect.move(randint(30, WIDTH - 30), randint(30, HEIGHT -150))
+        self.rect = self.rect.move(randint(30, WIDTH - 100), randint(30, HEIGHT -150))
         self.score = 0
         self.st = 0
 
