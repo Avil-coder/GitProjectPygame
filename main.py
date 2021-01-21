@@ -49,7 +49,6 @@ pygame.mixer.music.play(-1, 0.0)
 live_score = 0
 
 
-
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, sheet, columns, rows, x, y, kill=False):
         super().__init__(all_sprites)
@@ -102,14 +101,13 @@ class AnimatedSprite(pygame.sprite.Sprite):
     def restart(self):
         global x, y, speedy, speedx
         pygame.mixer.music.rewind()
-        screen.fill((R, G ,B))
+        screen.fill((R, G, B))
         x, y = WIDTH // 2, HEIGHT // 2
         speedx, speedy = 0, 0
         AnimatedSprite(image_stop, 1, 1, 8, 8, True)
         AnimatedSprite(image_stop, 1, 1, 8, 8)
         for item in block_sprites:
             item.kill()
-
 
 
 class Live(pygame.sprite.Sprite):
@@ -124,6 +122,7 @@ class Live(pygame.sprite.Sprite):
             self.image = heart
             self.rect = self.image.get_rect()
             self.rect = self.rect.move(0, 0)
+
 
 class Fall_blocks(pygame.sprite.Sprite):
     def __init__(self, blk):
@@ -140,14 +139,13 @@ class Fall_blocks(pygame.sprite.Sprite):
             self.kill()
 
 
-
 class Dot(pygame.sprite.Sprite):
     def __init__(self, dot):
         super().__init__(dot_sprites)
         self.add()
         self.image = dot
         self.rect = self.image.get_rect()
-        self.rect = self.rect.move(randint(30, WIDTH - 100), randint(30, HEIGHT -150))
+        self.rect = self.rect.move(randint(30, WIDTH - 100), randint(30, HEIGHT - 150))
         self.score = 0
         self.st = 0
 
@@ -167,6 +165,7 @@ class Dot(pygame.sprite.Sprite):
             block_sprites.update()
             block_sprites.draw(screen)
 
+
 def draw_game_over():
     img_end = pygame.image.load('data/game_over.png')
     while True:
@@ -178,6 +177,7 @@ def draw_game_over():
         screen.blit(img_end, [WIDTH // 2 - 50, HEIGHT // 2 - 50])
         pygame.mixer.music.stop()
         pygame.display.update()
+
 
 def game_loop():
     global x, y, running, speedy, speedx
@@ -227,6 +227,7 @@ def game_loop():
         all_sprites.update(speedx, speedy, x, y)
         all_sprites.draw(screen)
         pygame.display.flip()
+
 
 game_loop()
 pygame.quit()
